@@ -5,6 +5,7 @@ export interface ReqIssueMTResponse {
   requestBy: string;
   requestDate: string;
   reqDept: string;
+  site: string;
   requireDate: string;
   remark: string;
   createBy: string;
@@ -12,8 +13,9 @@ export interface ReqIssueMTResponse {
   updateBy: string;
   updateDate: string;
   status: string;
+  location: string;
   reqIssueMaterialDs: ReqIssueMaterialD[];
-  reqIssueMaterialLogs: ReqIssueMaterialLog[] | null;
+  reqIssueMaterialLogs: ReqIssueMaterialLog[];
 }
 
 export interface ReqIssueMaterialD {
@@ -25,9 +27,9 @@ export interface ReqIssueMaterialD {
   itemName: string;
   location: string;
   createBy: string;
-  createDate: Date;
+  createDate: string;
   updateBy: string;
-  updateDate: Date;
+  updateDate: string;
   status: string;
 }
 
@@ -35,12 +37,18 @@ export interface ReqIssueMaterialLog {
   id: number;
   reqHid: number;
   users: string;
-  logDate: Date;
+  logDate: string;
   status: string;
   levels: number;
   comment: string;
   action: string;
   clientName: string;
+}
+
+export interface changLocationItemH {
+  id: number;
+  department: string;
+  chkReqIss: boolean;
 }
 
 export interface RequestIssueMTItemListH {
@@ -54,6 +62,7 @@ export interface RequestIssueMTItemListH {
   onhand: number;
   whsCode: string;
   onhandDFwh: number;
+  chkReqIss: boolean;
   itemD: ItemD[];
 }
 
@@ -84,4 +93,35 @@ export interface LocationIssue {
   code: string;
   name: string;
   groups: string;
+}
+
+export interface IssueMTSearch {
+  id?: number;
+  issueNumber?: string;
+  location?: string;
+  lotlist?: string;
+  pickingBy?: string;
+  pickingDate?: string | null;
+  printDate?: string | null;
+  issueBy?: string;
+  issueDate?: string | null;
+  createBy?: string;
+}
+
+export interface IssueMTGroupD {
+  id: number;
+  buy: string;
+  location: string;
+  itemCode: string;
+  itemName: string;
+  uomName: string;
+  color: string;
+  warehouse: string;
+  baseQty: number;
+  onhand: number;
+  onhandWH: number;
+  plandQty: number;
+  pickQty: number;
+  issueQty: number;
+  confirmQty: number;
 }

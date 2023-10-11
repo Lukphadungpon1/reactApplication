@@ -1,148 +1,147 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
-  AllocateLotRequest,
-  AllocateLotResponse,
-} from "../../types/allocatelot.type";
+  IssueMaterialD,
+  IssueMaterialHResponse,
+} from "../../types/picking.type.tx";
 import { RootState } from "../store";
 import { header, httpClient } from "../../utils/httpclient";
-import {
-  LocationIssue,
-  ReqIssueMTResponse,
-  RequestIssueMTItemListH,
-} from "../../types/issueMT.type";
-import { stat } from "fs";
-import { act } from "react-dom/test-utils";
+import { GenPDMCResponselist } from "../../types/generateMCPD.type";
+import { IssueMTGroupD, IssueMTSearch } from "../../types/issueMT.type";
 
-export interface IssueMTState {
+export interface issueMTState {
   isFetching: boolean;
   isError: boolean;
   message: any;
-  allocateLotLisrequest: AllocateLotRequest;
-  allocateLotList: AllocateLotResponse[];
-  allocateLotListSearch: AllocateLotResponse[];
-  lotSelect: AllocateLotResponse | null;
-  ItemReqIssueH: RequestIssueMTItemListH[];
-  ItemReqIssueHSearch: RequestIssueMTItemListH[];
-  RequestissueMTH: ReqIssueMTResponse;
-  LocationIssue: LocationIssue[];
+  issueMT: IssueMaterialHResponse;
+  issueMTListD: IssueMTGroupD[];
+  issueMTListDSearch: IssueMTGroupD[];
+  responselist: GenPDMCResponselist[];
 }
 
-const defaultrequest: AllocateLotRequest = {
-  soNumber: "",
-  buy: "",
-  purOrder: "",
-  lot: "",
-};
-
-const defaultrequestissueH: ReqIssueMTResponse = {
+const defaultIssueMTH: IssueMaterialHResponse = {
   id: 0,
-  reqNumber: "0",
-  lot: "",
-  requestBy: "",
-  requestDate: new Date().toLocaleDateString("sv"),
-  reqDept: "",
-  requireDate: new Date().toLocaleDateString("sv"),
-  remark: "",
+  issueNumber: "",
+  location: "",
+  lotlist: "",
+  pickingBy: "",
+  pickingDate: "",
+  printDate: null,
+  issueBy: "",
+  issueDate: null,
   createBy: "",
-  createDate: new Date().toLocaleDateString("sv"),
+  createDate: "",
   updateBy: "",
-  updateDate: new Date().toLocaleDateString("sv"),
+  updateDate: null,
   status: "",
-  reqIssueMaterialDs: [],
-  reqIssueMaterialLogs: null,
+  uploadFile: "",
+  convertSap: 0,
+  docEntry: 0,
+  docNum: "",
+  remark: "",
+  issueMaterialDs: [],
+  issueMaterialManuals: [],
+  issueMaterialLogs: [],
 };
 
-const initialState: IssueMTState = {
+const dataresult: issueMTState = {
   isFetching: false,
   isError: false,
   message: null,
-  allocateLotLisrequest: defaultrequest,
-  allocateLotList: [],
-  allocateLotListSearch: [],
-  lotSelect: null,
-  ItemReqIssueH: [],
-  ItemReqIssueHSearch: [],
-  RequestissueMTH: defaultrequestissueH,
-  LocationIssue: [],
+  issueMT: defaultIssueMTH,
+  issueMTListD: [],
+  issueMTListDSearch: [],
+  responselist: [],
 };
 
-const dataresult: IssueMTState = {
+const initialState: issueMTState = {
   isFetching: false,
   isError: false,
   message: null,
-  allocateLotLisrequest: defaultrequest,
-  allocateLotList: [],
-  allocateLotListSearch: [],
-  lotSelect: null,
-  ItemReqIssueH: [],
-  ItemReqIssueHSearch: [],
-  RequestissueMTH: defaultrequestissueH,
-  LocationIssue: [],
+  issueMT: defaultIssueMTH,
+  issueMTListD: [],
+  issueMTListDSearch: [],
+  responselist: [],
 };
 
-export const GetLotForRequestasync = createAsyncThunk(
-  "issueMT/GetLotForRequest",
-  async (params: AllocateLotRequest) => {
-    console.log(params);
-    const job = new Promise<IssueMTState>((resolve, rejectWithValue) => {
+export const GetIssueByIdasync = createAsyncThunk(
+  "IssueMT/GetIssueByIdasync",
+  async (params: Number) => {
+    const job = new Promise<issueMTState>((resolve, rejectWithValue) => {
       httpClient
-        .post<any>("/RequestIssueMT/GetLotForRequest", params, header())
+        .get<any>("/IssueMT/" + params, header())
         .then((result) => {
-          console.log(result);
+          //console.log(result);
+          dataresult.issueMT = result.data;
 
-          dataresult.allocateLotLisrequest = params;
-          dataresult.allocateLotList = result.data;
-          dataresult.allocateLotListSearch = result.data;
           resolve(dataresult);
         })
         .catch((error) => {
           rejectWithValue(error.response.data);
         });
     });
-
     return await job;
   }
 );
 
-export const GetItemRequestHasync = createAsyncThunk(
-  "issueMT/GetItemPDByLot",
-  async (params: AllocateLotRequest) => {
-    const job = new Promise<IssueMTState>((resolve, rejectWithValue) => {
+export const GetissueMTListDasync = createAsyncThunk(
+  "IssueMT/GetissueMTListDasync",
+  async (params: Number) => {
+    const job = new Promise<issueMTState>((resolve, rejectWithValue) => {
       httpClient
-        .post<any>("/RequestIssueMT/GetItemPDByLot", params, header())
+        .post<any>("/IssueMT/GetissueMTListD", params, header())
         .then((result) => {
-          console.log(result);
+          //console.log(result);
+          dataresult.issueMTListD = result.data;
+          dataresult.issueMTListDSearch = result.data;
 
-          dataresult.ItemReqIssueH = result.data;
-          dataresult.ItemReqIssueHSearch = result.data;
           resolve(dataresult);
         })
         .catch((error) => {
           rejectWithValue(error.response.data);
         });
     });
-
     return await job;
   }
 );
 
-export const GetLocationIssueasync = createAsyncThunk(
-  "issueMT/GetLocationIssue",
-  async () => {
-    const job = new Promise<IssueMTState>((resolve, rejectWithValue) => {
+export const CreateIssueMTasync = createAsyncThunk(
+  "IssueMT/CreateIssueMTasync",
+  async (params: IssueMTSearch) => {
+    const job = new Promise<issueMTState>((resolve, rejectWithValue) => {
       httpClient
-        .get<any>("/RequestIssueMT/GetLocationIssue", header())
+        .post<any>("/IssueMT/Create", params, header())
         .then((result) => {
-          console.log(result);
+          //console.log(result);
+          dataresult.responselist = result.data;
 
-          dataresult.LocationIssue = result.data;
           resolve(dataresult);
         })
         .catch((error) => {
-          rejectWithValue(error.response.data);
+          console.log(JSON.stringify(error.response.data));
+          rejectWithValue(JSON.stringify(error.response.data));
         });
     });
+    return await job;
+  }
+);
 
+export const DeleteIssueMTasync = createAsyncThunk(
+  "IssueMT/DeleteissueMT",
+  async (params: number) => {
+    const job = new Promise<issueMTState>((resolve, rejectWithValue) => {
+      httpClient
+        .delete<any>("/IssueMT/" + params, header())
+        .then((result) => {
+          //console.log(result);
+          dataresult.responselist = result.data;
+
+          resolve(dataresult);
+        })
+        .catch((error) => {
+          console.log(JSON.stringify(error.response.data));
+          rejectWithValue(JSON.stringify(error.response.data));
+        });
+    });
     return await job;
   }
 );
@@ -151,11 +150,11 @@ const issueMTSlice = createSlice({
   name: "issueMT",
   initialState,
   reducers: {
-    SearchLotRequestMT: (
-      state: IssueMTState,
-      action: PayloadAction<string>
-    ) => {
-      const filtered = state.allocateLotList.filter((entry) =>
+    CleanIssueMTState: (state: issueMTState) => {
+      return initialState;
+    },
+    SearchIssueListD: (state: issueMTState, action: PayloadAction<string>) => {
+      const filtered = state.issueMTListD.filter((entry) =>
         Object.values(entry).some(
           (val) =>
             typeof val === "string" &&
@@ -163,110 +162,95 @@ const issueMTSlice = createSlice({
         )
       );
 
-      state.allocateLotListSearch = filtered;
-    },
-    AddLotSelectReqIssue: (
-      state: IssueMTState,
-      action: PayloadAction<AllocateLotResponse>
-    ) => {
-      state.lotSelect = action.payload;
-    },
-    ClearGenerateMCPD: (state: IssueMTState) => {
-      state = initialState;
-    },
-    ClearRequestMTLostList: (state: IssueMTState) => {
-      state.allocateLotList = [];
-      state.allocateLotListSearch = [];
-      state.allocateLotLisrequest = defaultrequest;
-    },
-    UpdateRequestissueMTH: (
-      state: IssueMTState,
-      action: PayloadAction<ReqIssueMTResponse>
-    ) => {
-      return { ...state, RequestissueMTH: action.payload };
-
-      //state.RequestissueMTH = action.payload;
-    },
-    SearchItemIssue: (state: IssueMTState, action: PayloadAction<String>) => {
-      const filtered = state.ItemReqIssueH.filter((entry) =>
-        Object.values(entry).some(
-          (val) =>
-            typeof val === "string" &&
-            val.toLowerCase().includes(action.payload.toLowerCase())
-        )
-      );
-      if (filtered.length > 0) state.ItemReqIssueHSearch = filtered;
-    },
-    SearchItemIssuebyType: (
-      state: IssueMTState,
-      action: PayloadAction<string>
-    ) => {
-      if (action.payload !== "All") {
-        const filtered1 = state.ItemReqIssueH.filter(
-          (entry) => entry.department === action.payload
-        );
-        state.ItemReqIssueH = filtered1;
-      } else state.ItemReqIssueH = state.ItemReqIssueHSearch;
+      state.issueMTListDSearch = filtered;
     },
   },
   extraReducers(builder) {
-    // get GetLotForRequest
-    builder.addCase(GetLotForRequestasync.fulfilled, (state, action) => {
+    //GetIssueByIdasync
+    builder.addCase(GetIssueByIdasync.fulfilled, (state, action) => {
       state.isError = false;
       state.isFetching = false;
       state.message = "OK";
-      state.allocateLotLisrequest = action.payload.allocateLotLisrequest;
-      state.allocateLotList = action.payload.allocateLotList;
-      state.allocateLotListSearch = action.payload.allocateLotListSearch;
+      state.issueMT = action.payload.issueMT;
     });
-    builder.addCase(GetLotForRequestasync.rejected, (state, action) => {
-      state.allocateLotList = [];
-      state.allocateLotListSearch = [];
+    builder.addCase(GetIssueByIdasync.rejected, (state, action) => {
       state.isFetching = false;
       state.isError = true;
       state.message = action.error.message;
+      state.issueMT = defaultIssueMTH;
     });
-    builder.addCase(GetLotForRequestasync.pending, (state, action) => {
+    builder.addCase(GetIssueByIdasync.pending, (state, action) => {
       state.isFetching = true;
       state.isError = false;
       state.message = "Loading...";
     });
 
-    // get ItemreqissueH
-    builder.addCase(GetItemRequestHasync.fulfilled, (state, action) => {
+    //GetissueMTListDasync
+    builder.addCase(GetissueMTListDasync.fulfilled, (state, action) => {
       state.isError = false;
       state.isFetching = false;
       state.message = "OK";
-      state.ItemReqIssueH = action.payload.ItemReqIssueH;
-      state.ItemReqIssueHSearch = action.payload.ItemReqIssueHSearch;
+      state.issueMTListD = action.payload.issueMTListD;
+      state.issueMTListDSearch = action.payload.issueMTListDSearch;
     });
-    builder.addCase(GetItemRequestHasync.rejected, (state, action) => {
-      state.ItemReqIssueH = [];
-      state.ItemReqIssueHSearch = [];
+    builder.addCase(GetissueMTListDasync.rejected, (state, action) => {
       state.isFetching = false;
       state.isError = true;
       state.message = action.error.message;
+      state.issueMTListD = [];
+      state.issueMTListDSearch = [];
     });
-    builder.addCase(GetItemRequestHasync.pending, (state, action) => {
+    builder.addCase(GetissueMTListDasync.pending, (state, action) => {
       state.isFetching = true;
       state.isError = false;
       state.message = "Loading...";
     });
 
-    // get GetLocationIssueasync
-    builder.addCase(GetLocationIssueasync.fulfilled, (state, action) => {
+    //CreateIssueMTasync
+    builder.addCase(CreateIssueMTasync.fulfilled, (state, action) => {
       state.isError = false;
       state.isFetching = false;
       state.message = "OK";
-      state.LocationIssue = action.payload.LocationIssue;
+      state.responselist = action.payload.responselist;
     });
-    builder.addCase(GetLocationIssueasync.rejected, (state, action) => {
-      state.LocationIssue = [];
+    builder.addCase(CreateIssueMTasync.rejected, (state, action) => {
+      let datobj = JSON.parse(action.error.message?.toString()!);
+      if (datobj != null) {
+        state.responselist = datobj;
+        state.message = datobj.errorMessage;
+      } else {
+        state.message = action.error.message;
+        state.responselist = [];
+      }
       state.isFetching = false;
       state.isError = true;
-      state.message = action.error.message;
     });
-    builder.addCase(GetLocationIssueasync.pending, (state, action) => {
+    builder.addCase(CreateIssueMTasync.pending, (state, action) => {
+      state.isFetching = true;
+      state.isError = false;
+      state.message = "Loading...";
+    });
+
+    //DeleteIssueMTasync
+    builder.addCase(DeleteIssueMTasync.fulfilled, (state, action) => {
+      state.isError = false;
+      state.isFetching = false;
+      state.message = "OK";
+      state.responselist = action.payload.responselist;
+    });
+    builder.addCase(DeleteIssueMTasync.rejected, (state, action) => {
+      let datobj = JSON.parse(action.error.message?.toString()!);
+      if (datobj != null) {
+        state.responselist = datobj;
+        state.message = datobj.errorMessage;
+      } else {
+        state.message = action.error.message;
+        state.responselist = [];
+      }
+      state.isFetching = false;
+      state.isError = true;
+    });
+    builder.addCase(DeleteIssueMTasync.pending, (state, action) => {
       state.isFetching = true;
       state.isError = false;
       state.message = "Loading...";
@@ -274,14 +258,6 @@ const issueMTSlice = createSlice({
   },
 });
 
-export const {
-  SearchLotRequestMT,
-  ClearGenerateMCPD,
-  AddLotSelectReqIssue,
-  ClearRequestMTLostList,
-  UpdateRequestissueMTH,
-  SearchItemIssue,
-  SearchItemIssuebyType,
-} = issueMTSlice.actions;
+export const { CleanIssueMTState, SearchIssueListD } = issueMTSlice.actions;
 export const issueMTSelector = (store: RootState) => store.issueMTReducer;
 export default issueMTSlice.reducer;

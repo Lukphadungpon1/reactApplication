@@ -11,6 +11,12 @@ import allocateLotEditReducer from "./slices/allocateLotEditSlice";
 import generateMCandPDReducer from "./slices/generateMCandPDSlice";
 import productionOrderReducer from "./slices/productionOrderSlice";
 import dashboardReducer from "./slices/dashboardSlice";
+
+import issueMTAPRReducer from "./slices/issueMTAPRSlice";
+import pickingReducer from "./slices/pickingSlice";
+import requestissueMTReducer from "./slices/RequestissueMTSlice";
+
+import issueMTListReducer from "./slices/issueMTListSlice";
 import issueMTReducer from "./slices/issueMTSlice";
 
 const reducer = {
@@ -23,6 +29,10 @@ const reducer = {
   generateMCandPDReducer,
   productionOrderReducer,
   dashboardReducer,
+  issueMTAPRReducer,
+  pickingReducer,
+  requestissueMTReducer,
+  issueMTListReducer,
   issueMTReducer,
 };
 

@@ -17,6 +17,7 @@ export interface LoginState {
   message: any;
   token: any;
   account: Account;
+  extranalLink: string;
 }
 
 const defaultaccount: Account = {
@@ -37,6 +38,7 @@ const initialState: LoginState = {
   message: null,
   token: null,
   account: defaultaccount,
+  extranalLink: "",
 };
 
 export const LoginAsync = createAsyncThunk(
@@ -49,6 +51,7 @@ export const LoginAsync = createAsyncThunk(
         message: null,
         token: null,
         account: defaultaccount,
+        extranalLink: "",
       };
 
       httpClient
@@ -109,6 +112,12 @@ const authSlice = createSlice({
       state.token = null;
       state.message = null;
     },
+    AddExternalLink: (state: LoginState, action: PayloadAction<string>) => {
+      state.extranalLink = action.payload;
+    },
+    ClearExternalLink: (state: LoginState) => {
+      state.extranalLink = "";
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(LoginAsync.fulfilled, (state, action) => {
@@ -131,6 +140,12 @@ const authSlice = createSlice({
   },
 });
 
-export const { LoginFetchine, restoreLogin, Logout } = authSlice.actions;
+export const {
+  LoginFetchine,
+  restoreLogin,
+  Logout,
+  AddExternalLink,
+  ClearExternalLink,
+} = authSlice.actions;
 export const authSelector = (store: RootState) => store.authReducer;
 export default authSlice.reducer;

@@ -94,13 +94,13 @@ export const MenuReqIssueMat: MyItem[] = [
       {
         id: 32,
         title: "Approve",
-        path: "/issueMT",
+        path: "/requestIssueApprove",
         icon: "approval",
       },
       {
         id: 33,
         title: "Request MT List",
-        path: "/issueList",
+        path: "/requestIssueList",
         icon: "list_alt",
       },
     ],
@@ -117,7 +117,7 @@ export const MenuIssueMat: MyItem[] = [
       {
         id: 41,
         title: "Picking",
-        path: "/requestIssue",
+        path: "/picking",
         icon: "local_shipping",
       },
       {
@@ -129,7 +129,7 @@ export const MenuIssueMat: MyItem[] = [
       {
         id: 43,
         title: "Issue List",
-        path: "/issueList",
+        path: "/issueMTList",
         icon: "list_alt",
       },
       {

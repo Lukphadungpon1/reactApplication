@@ -8,7 +8,15 @@ import { typographyClasses } from "@mui/material";
 import { FieldProps } from "formik";
 import { useSelector } from "react-redux";
 import { saleOrderSelector } from "../store/slices/saleOrderSlice";
-import { issueMTSelector } from "../store/slices/issueMTSlice";
+import {
+  SearchItemIssuebyType,
+  requestissueMTSelector,
+} from "../store/slices/RequestissueMTSlice";
+import { useAppDispatch } from "../store/store";
+import {
+  SelectedLocationPick,
+  pickingSelector,
+} from "../store/slices/pickingSlice";
 
 interface props extends FieldProps {
   types: string;
@@ -17,13 +25,30 @@ interface props extends FieldProps {
 export default function CustomSelecte(props: props) {
   const dataFetchedRef = React.useRef(false);
   const saleOrderReducer = useSelector(saleOrderSelector);
-  const issueMTReducer = useSelector(issueMTSelector);
+  const requestissueMTReducer = useSelector(requestissueMTSelector);
+  const pickingReducer = useSelector(pickingSelector);
+
   const errorsmessage = props.form.errors[props.field.name];
+
+  const dispatch = useAppDispatch();
 
   const [age, setAge] = React.useState("");
 
   const handleChange = (event: SelectChangeEvent) => {
     props.form.setFieldValue(props.field.name, event.target.value);
+
+    //console.log(event.target.value);
+
+    props.field.name === "location" &&
+      requestissueMTReducer.LocationIssue.length > 0 &&
+      dispatch(SearchItemIssuebyType(event.target.value));
+
+    props.field.name === "location" &&
+      pickingReducer.LocationPick.length > 0 &&
+      dispatch(SelectedLocationPick(event.target.value));
+
+    // props.field.name === "BuyYear" &&
+    // props.form  (event.target.value);
 
     setAge(event.target.value as string);
   };
@@ -68,11 +93,17 @@ export default function CustomSelecte(props: props) {
               </MenuItem>
             ))}
           {props.field.name === "location" &&
-            issueMTReducer.LocationIssue.map((item, index) => (
-              <MenuItem value={item.code} key={index}>
-                {item.name}
-              </MenuItem>
-            ))}
+          requestissueMTReducer.LocationIssue.length > 1
+            ? requestissueMTReducer.LocationIssue.map((item, index) => (
+                <MenuItem value={item.code} key={index}>
+                  {item.name}
+                </MenuItem>
+              ))
+            : pickingReducer.LocationPick.map((item, index) => (
+                <MenuItem value={item.code} key={index}>
+                  {item.name}
+                </MenuItem>
+              ))}
         </Select>
       </FormControl>
     </Box>

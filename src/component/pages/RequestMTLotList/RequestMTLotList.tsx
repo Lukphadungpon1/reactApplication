@@ -18,12 +18,11 @@ import {
   ClearRequestMTLostList,
   GetLocationIssueasync,
   GetLotForRequestasync,
-  issueMTSelector,
-} from "../../../store/slices/issueMTSlice";
+  requestissueMTSelector,
+} from "../../../store/slices/RequestissueMTSlice";
 import { useAppDispatch } from "../../../store/store";
 import { TextField } from "formik-material-ui";
 import LotListReqMT from "./LotListReqMT";
-import ItemListReqMT from "../ItemListReqMT/ItemListReqMT";
 
 type RequestMTLotListProps = {
   handlecloseDialog: any;
@@ -31,7 +30,7 @@ type RequestMTLotListProps = {
 
 const RequestMTLotList: React.FC<any> = (props: RequestMTLotListProps) => {
   const dataFetchedRef = React.useRef(false);
-  const issueMTReducer = useSelector(issueMTSelector);
+  const requestissueMTReducer = useSelector(requestissueMTSelector);
 
   const dispatch = useAppDispatch();
 
@@ -122,7 +121,7 @@ const RequestMTLotList: React.FC<any> = (props: RequestMTLotListProps) => {
                     Clear
                   </Button>
                   <Button
-                    disabled={issueMTReducer.isFetching}
+                    disabled={requestissueMTReducer.isFetching}
                     variant="contained"
                     color="success"
                     type="submit"
@@ -133,22 +132,22 @@ const RequestMTLotList: React.FC<any> = (props: RequestMTLotListProps) => {
                 </Stack>
               </Grid>
 
-              {issueMTReducer.isFetching && (
+              {requestissueMTReducer.isFetching && (
                 <Grid item xs={4} sm={12} md={12}>
                   <Alert sx={{ margin: 1 }} variant="outlined" severity="info">
-                    {issueMTReducer.message}
+                    {requestissueMTReducer.message}
                   </Alert>
                 </Grid>
               )}
 
-              {issueMTReducer.isError && (
+              {requestissueMTReducer.isError && (
                 <Grid item xs={4} sm={12} md={12}>
                   <Alert
                     sx={{ margin: 1 }}
                     variant="outlined"
                     severity="warning"
                   >
-                    {issueMTReducer.message}
+                    {requestissueMTReducer.message}
                   </Alert>
                 </Grid>
               )}
@@ -191,7 +190,7 @@ const RequestMTLotList: React.FC<any> = (props: RequestMTLotListProps) => {
               return errors;
             }}
             enableReinitialize
-            initialValues={issueMTReducer.allocateLotLisrequest}
+            initialValues={requestissueMTReducer.allocateLotLisrequest}
             onSubmit={async (values, { setSubmitting }) => {
               const resultaction = await dispatch(
                 GetLotForRequestasync(values)

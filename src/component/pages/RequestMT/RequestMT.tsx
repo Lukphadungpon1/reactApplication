@@ -17,21 +17,27 @@ import * as React from "react";
 import { AllocateLotRequest } from "../../../types/allocatelot.type";
 import { useSelector } from "react-redux";
 import {
-  ClearGenerateMCPD,
+  ClearIssueMTState,
+  GetItemRequestHasync,
   GetLocationIssueasync,
   GetLotForRequestasync,
+  NewLogRequest,
+  RequestIssueasync,
   SearchItemIssuebyType,
-  issueMTSelector,
-} from "../../../store/slices/issueMTSlice";
+  requestissueMTSelector,
+} from "../../../store/slices/RequestissueMTSlice";
 import { useAppDispatch } from "../../../store/store";
 import { TextField } from "formik-material-ui";
 
-import ItemListReqMT from "../ItemListReqMT/ItemListReqMT";
-import { ReqIssueMTResponse } from "../../../types/issueMT.type";
+import {
+  ReqIssueMTResponse,
+  ReqIssueMaterialLog,
+} from "../../../types/issueMT.type";
 import SearchIcon from "@mui/icons-material/Search";
 import RequestMTLotList from "../RequestMTLotList/RequestMTLotList";
 import CustomSelecte from "../../CustomSelecte";
 import RequestMTItemList from "../RequestMTItemList";
+import { authSelector } from "../../../store/slices/authSlice";
 
 type RequestMTProps = {
   //
@@ -39,11 +45,16 @@ type RequestMTProps = {
 
 const RequestMT: React.FC<any> = () => {
   const dataFetchedRef = React.useRef(false);
-  const issueMTReducer = useSelector(issueMTSelector);
+  const requestissueMTReducer = useSelector(requestissueMTSelector);
+  const authReducer = useSelector(authSelector);
 
   const dispatch = useAppDispatch();
 
   const [openDialog, setopenDialog] = React.useState(false);
+
+  const [openResultDialog, setopenResultDialog] = React.useState(false);
+
+  const [errorLocation, seterrorLocation] = React.useState(false);
 
   const loadMasterData = async () => {
     const LocationIssue = await dispatch(GetLocationIssueasync());
@@ -51,15 +62,24 @@ const RequestMT: React.FC<any> = () => {
 
   const [type, settype] = React.useState("All");
 
+  const [requesIssueLog, setrequesIssueLog] = React.useState<
+    ReqIssueMaterialLog[]
+  >([]);
+
   React.useEffect(() => {
     if (dataFetchedRef.current) return;
     dataFetchedRef.current = true;
 
     loadMasterData();
+
+    return () => {
+      console.log("call back");
+      dispatch(ClearIssueMTState());
+    };
   }, []);
 
   const handlecleardata = async () => {
-    dispatch(ClearGenerateMCPD());
+    dispatch(ClearIssueMTState());
   };
 
   const getLotList = async (values: AllocateLotRequest) => {
@@ -74,10 +94,7 @@ const RequestMT: React.FC<any> = () => {
     setopenDialog(false);
   };
 
-  const handleChange = (event: SelectChangeEvent) => {
-    let value = event.target.value;
-
-    settype(value);
+  const handleChangelocation = (value: string) => {
     dispatch(SearchItemIssuebyType(value));
   };
 
@@ -110,12 +127,67 @@ const RequestMT: React.FC<any> = () => {
     );
   };
 
+  const showresultlist = () => {
+    return (
+      <Box sx={{ height: "100%", width: "100%" }}>
+        <Grid
+          container
+          spacing={{ xs: 1, md: 2 }}
+          columns={{ xs: 4, sm: 8, md: 12 }}
+        >
+          <Grid item xs={12} sm={12} md={12}>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ marginTop: 2, justifyContent: "left" }}
+            >
+              <Typography variant="h5" sx={{ textAlign: "left" }}>
+                Result List
+              </Typography>
+
+              <Button
+                disabled={requestissueMTReducer.isFetching}
+                type="button"
+                onClick={() => {
+                  setopenResultDialog(false);
+                }}
+              >
+                Close
+              </Button>
+            </Stack>
+          </Grid>
+
+          <Grid spacing={0} item xs={12} sm={12} md={12}>
+            <Box sx={{ width: "100%", maxWidth: 500 }}>
+              {requestissueMTReducer.responselist.map((value, index) => (
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  key={index}
+                  sx={{ marginTop: 0, justifyContent: "left" }}
+                >
+                  <Typography
+                    variant="overline"
+                    sx={{ textAlign: "left" }}
+                    color={value.errorMessage !== "Complete" ? "red" : "green"}
+                  >
+                    {value.referenceNumber} : {value.errorMessage}.
+                  </Typography>
+                </Stack>
+              ))}
+            </Box>
+          </Grid>
+        </Grid>
+      </Box>
+    );
+  };
+
   const showfrom = ({
     values,
     errors,
     setFieldValue,
     isSubmitting,
-  }: FormikProps<AllocateLotRequest>) => {
+  }: FormikProps<ReqIssueMTResponse>) => {
     return (
       <>
         <Box
@@ -253,7 +325,6 @@ const RequestMT: React.FC<any> = () => {
                   id="location"
                   name="location"
                   label="Location"
-                  onChange={() => {}}
                 ></Field>
               </Grid>
 
@@ -266,12 +337,17 @@ const RequestMT: React.FC<any> = () => {
                   <Button
                     variant="outlined"
                     type="reset"
-                    onClick={handlecleardata}
+                    onClick={(e: React.ChangeEvent<any>) => {
+                      e.preventDefault();
+                      console.log("aaa");
+
+                      handlecleardata();
+                    }}
                   >
                     Clear
                   </Button>
                   <Button
-                    disabled={issueMTReducer.isFetching}
+                    disabled={requestissueMTReducer.isFetching}
                     variant="contained"
                     color="success"
                     type="submit"
@@ -282,22 +358,33 @@ const RequestMT: React.FC<any> = () => {
                 </Stack>
               </Grid>
 
-              {issueMTReducer.isFetching && (
-                <Grid item xs={4} sm={12} md={12}>
-                  <Alert sx={{ margin: 1 }} variant="outlined" severity="info">
-                    {issueMTReducer.message}
-                  </Alert>
-                </Grid>
-              )}
-
-              {issueMTReducer.isError && (
+              {errors.site && (
                 <Grid item xs={4} sm={12} md={12}>
                   <Alert
                     sx={{ margin: 1 }}
                     variant="outlined"
                     severity="warning"
                   >
-                    {issueMTReducer.message}
+                    {errors.site}
+                  </Alert>
+                </Grid>
+              )}
+              {requestissueMTReducer.isFetching && (
+                <Grid item xs={4} sm={12} md={12}>
+                  <Alert sx={{ margin: 1 }} variant="outlined" severity="info">
+                    {requestissueMTReducer.message}
+                  </Alert>
+                </Grid>
+              )}
+
+              {requestissueMTReducer.isError && (
+                <Grid item xs={4} sm={12} md={12}>
+                  <Alert
+                    sx={{ margin: 1 }}
+                    variant="outlined"
+                    severity="warning"
+                  >
+                    {requestissueMTReducer.message}
                   </Alert>
                 </Grid>
               )}
@@ -305,6 +392,7 @@ const RequestMT: React.FC<any> = () => {
           </Form>
 
           {showDialog()}
+          {openResultDialog && showresultlist()}
           {/* {openDialog && showresultlist()}
 
         
@@ -312,6 +400,26 @@ const RequestMT: React.FC<any> = () => {
         </Box>
       </>
     );
+  };
+
+  const initialValues: ReqIssueMTResponse = {
+    id: 0,
+    reqNumber: "0",
+    lot: "",
+    requestBy: "",
+    requestDate: new Date().toLocaleDateString("sv"),
+    reqDept: "",
+    site: "",
+    requireDate: new Date().toLocaleDateString("sv"),
+    remark: "",
+    createBy: "",
+    createDate: new Date().toLocaleDateString("sv"),
+    updateBy: "",
+    updateDate: new Date().toLocaleDateString("sv"),
+    status: "",
+    location: "",
+    reqIssueMaterialDs: [],
+    reqIssueMaterialLogs: [],
   };
 
   return (
@@ -338,14 +446,28 @@ const RequestMT: React.FC<any> = () => {
               if (!values.requestDate) errors.requestDate = "Enter RequestDate";
               if (!values.requireDate) errors.requireDate = "Enter RequireDate";
 
-              if (values.reqIssueMaterialDs.length === 0)
-                errors.reqIssueMaterialDs = "Select Item";
+              if (
+                requestissueMTReducer.RequestissueMTH.reqIssueMaterialDs
+                  .length === 0
+              )
+                seterrorLocation(true);
 
-              if (values.reqIssueMaterialDs.length > 0) {
-                values.reqIssueMaterialDs.map((obj, index) => {
-                  if (!obj.location)
-                    errors.reqIssueMaterialDs = "Enter Location";
-                });
+              if (
+                requestissueMTReducer.RequestissueMTH.reqIssueMaterialDs
+                  .length > 0
+              ) {
+                if (
+                  requestissueMTReducer.RequestissueMTH.reqIssueMaterialDs.filter(
+                    (f) => {
+                      return f.location === "";
+                    }
+                  ).length > 0
+                ) {
+                  seterrorLocation(true);
+                  errors.site = "Please select Location.";
+                } else {
+                  seterrorLocation(false);
+                }
               }
 
               // if (values.stock < 10) errors.stock = "Min stock is not lower than 10";
@@ -353,11 +475,27 @@ const RequestMT: React.FC<any> = () => {
               return errors;
             }}
             enableReinitialize
-            initialValues={issueMTReducer.RequestissueMTH}
+            initialValues={
+              requestissueMTReducer.RequestissueMTH
+                ? requestissueMTReducer.RequestissueMTH
+                : initialValues
+            }
             onSubmit={async (values, { setSubmitting }) => {
-              // const resultaction = await dispatch(
-              //   GetLotForRequestasync(values)
-              // );
+              const resultaction = await dispatch(
+                RequestIssueasync(requestissueMTReducer.RequestissueMTH)
+              );
+
+              if (RequestIssueasync.fulfilled.match(resultaction)) {
+                const _reqdata: AllocateLotRequest = {
+                  soNumber: "",
+                  buy: "",
+                  purOrder: "",
+                  lot: requestissueMTReducer.RequestissueMTH.lot,
+                };
+                dispatch(GetItemRequestHasync(_reqdata));
+              }
+              setopenResultDialog(true);
+
               // console.log("aaa");
             }}
           >

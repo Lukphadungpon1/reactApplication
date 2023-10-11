@@ -28,6 +28,12 @@ import AllocateLotUpdate from "./component/pages/AllocateLotUpdate/AllocateLotUp
 import GenerateMC from "./component/pages/GenerateMC/GenerateMC";
 import ProductionOrderList from "./component/pages/ProductionOrderList/ProductionOrderList";
 import RequestMT from "./component/pages/RequestMT/RequestMT";
+import RequestMTApprove from "./component/pages/RequestMTApprove/RequestMTApprove";
+import RequestMTList from "./component/pages/RequestMTList/RequestMTList";
+import PickingMT from "./component/pages/PickingMT/PickingMT";
+import RedirectPage from "./component/pages/RedirectPage";
+import IssueMT from "./component/pages/IssueMT/IssueMT";
+import IssueMTList from "./component/pages/IssueMTList/IssueMTList";
 
 const drawerWidth = 240;
 
@@ -103,8 +109,12 @@ export default function App() {
     setOpen(false);
   };
 
-  React.useEffect(() => {
+  const handlerestoreLogin = () => {
     dispatch(restoreLogin());
+  };
+
+  React.useEffect(() => {
+    handlerestoreLogin();
   }, []);
 
   return (
@@ -137,6 +147,7 @@ export default function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/" element={<Navigate to="/login" />} />
               <Route path="*" element={<NotFound />} />
+              <Route path="/external-link" element={<RedirectPage />} />
             </Route>
 
             <Route path="/" element={<ProtectedRoutes />}>
@@ -149,6 +160,15 @@ export default function App() {
               <Route path="/generateMC" element={<GenerateMC />} />
               <Route path="/pdList" element={<ProductionOrderList />} />
               <Route path="/requestIssue" element={<RequestMT />} />
+
+              <Route
+                path="/requestIssueApprove"
+                element={<RequestMTApprove />}
+              />
+              <Route path="/requestIssueList" element={<RequestMTList />} />
+              <Route path="/picking" element={<PickingMT />} />
+              <Route path="/issueMT" element={<IssueMT />} />
+              <Route path="/issueMTList" element={<IssueMTList />} />
 
               <Route
                 path="/allocateLotUpdate"

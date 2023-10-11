@@ -5,8 +5,8 @@ import {
   GetItemRequestHasync,
   SearchLotRequestMT,
   UpdateRequestissueMTH,
-  issueMTSelector,
-} from "../../../store/slices/issueMTSlice";
+  requestissueMTSelector,
+} from "../../../store/slices/RequestissueMTSlice";
 import { useAppDispatch } from "../../../store/store";
 import { useDebounce } from "@react-hook/debounce";
 import { AllocateLotRequest } from "../../../types/allocatelot.type";
@@ -16,7 +16,10 @@ import Moment from "react-moment";
 import QuickSearchToolbar from "../../QuickSearchToolbar";
 import AddTaskIcon from "@mui/icons-material/AddTask";
 import AddchartIcon from "@mui/icons-material/Addchart";
-import { ReqIssueMTResponse } from "../../../types/issueMT.type";
+import {
+  ReqIssueMTResponse,
+  ReqIssueMaterialLog,
+} from "../../../types/issueMT.type";
 import { authSelector } from "../../../store/slices/authSlice";
 
 type Props = {
@@ -25,7 +28,7 @@ type Props = {
 };
 
 const LotListReqMT = (props: Props) => {
-  const issueMTReducer = useSelector(issueMTSelector);
+  const requestissueMTReducer = useSelector(requestissueMTSelector);
   const authReducer = useSelector(authSelector);
   const dispatch = useAppDispatch();
 
@@ -58,6 +61,86 @@ const LotListReqMT = (props: Props) => {
       field: "id",
       width: 50,
       // hideable: false,
+    },
+    {
+      headerName: "Request",
+      headerAlign: "center",
+      field: ".mc",
+      width: 100,
+      align: "center",
+      renderCell: ({ row }: GridRenderCellParams<any>) => (
+        <IconButton
+          aria-label="Maincard"
+          color="primary"
+          size="small"
+          onClick={async (e: React.ChangeEvent<any>) => {
+            e.preventDefault();
+
+            //console.log(row.id);
+            var ids = row.id;
+
+            const selectedRows =
+              requestissueMTReducer.allocateLotListSearch.filter(
+                (row) => row.id === ids
+              );
+            selectedRows.map((obj) => {
+              //console.log(obj.allocateMcs);
+
+              const _data: AllocateLotRequest = {
+                soNumber: "",
+                buy: "",
+                purOrder: "",
+                lot: obj.lot,
+              };
+
+              const _loglist: ReqIssueMaterialLog[] = [
+                {
+                  id: 0,
+                  reqHid: 0,
+                  users: authReducer.account.iss,
+                  logDate: new Date().toLocaleDateString("sv"),
+                  status: "Request",
+                  levels: 0,
+                  comment: "",
+                  action: "Create",
+                  clientName: "",
+                },
+              ];
+
+              const _reqmth: ReqIssueMTResponse = {
+                id: 0,
+                reqNumber: "0",
+                lot: obj.lot,
+                requestBy: authReducer.account.iss,
+                requestDate: new Date().toLocaleDateString("sv"),
+                reqDept: authReducer.account.EmpDepartment,
+                site: authReducer.account.Site,
+                requireDate: new Date().toLocaleDateString("sv"),
+                remark: "",
+                createBy: "",
+                createDate: new Date().toLocaleDateString("sv"),
+                updateBy: "",
+                updateDate: new Date().toLocaleDateString("sv"),
+                status: "Draft",
+                location: "",
+                reqIssueMaterialDs: [],
+                reqIssueMaterialLogs: _loglist,
+              };
+
+              dispatch(AddLotSelectReqIssue(obj));
+              dispatch(UpdateRequestissueMTH(_reqmth));
+
+              handleGetItemRequestH(_data);
+            });
+
+            // props.handlemclisthead(selectedRows);
+
+            //navigate("/saleOrder", { state: { rowid: row.id } });
+          }}
+        >
+          <AddchartIcon fontSize="inherit" />
+        </IconButton>
+      ),
     },
     {
       field: "buy",
@@ -420,70 +503,6 @@ const LotListReqMT = (props: Props) => {
     //     </Typography>
     //   ),
     // },
-
-    {
-      headerName: "Request",
-      headerAlign: "center",
-      field: ".mc",
-      width: 100,
-      align: "center",
-      renderCell: ({ row }: GridRenderCellParams<any>) => (
-        <IconButton
-          aria-label="Maincard"
-          color="primary"
-          size="small"
-          onClick={async (e: React.ChangeEvent<any>) => {
-            e.preventDefault();
-
-            //console.log(row.id);
-            var ids = row.id;
-
-            const selectedRows = issueMTReducer.allocateLotListSearch.filter(
-              (row) => row.id === ids
-            );
-            selectedRows.map((obj) => {
-              //console.log(obj.allocateMcs);
-
-              const _data: AllocateLotRequest = {
-                soNumber: "",
-                buy: "",
-                purOrder: "",
-                lot: obj.lot,
-              };
-
-              const _reqmth: ReqIssueMTResponse = {
-                id: 0,
-                reqNumber: "0",
-                lot: obj.lot,
-                requestBy: authReducer.account.iss,
-                requestDate: new Date().toLocaleDateString("sv"),
-                reqDept: authReducer.account.EmpDepartment,
-                requireDate: new Date().toLocaleDateString("sv"),
-                remark: "",
-                createBy: "",
-                createDate: new Date().toLocaleDateString("sv"),
-                updateBy: "",
-                updateDate: new Date().toLocaleDateString("sv"),
-                status: "Draft",
-                reqIssueMaterialDs: [],
-                reqIssueMaterialLogs: null,
-              };
-
-              dispatch(AddLotSelectReqIssue(obj));
-              dispatch(UpdateRequestissueMTH(_reqmth));
-
-              handleGetItemRequestH(_data);
-            });
-
-            // props.handlemclisthead(selectedRows);
-
-            //navigate("/saleOrder", { state: { rowid: row.id } });
-          }}
-        >
-          <AddchartIcon fontSize="inherit" />
-        </IconButton>
-      ),
-    },
   ];
 
   return (
@@ -505,8 +524,8 @@ const LotListReqMT = (props: Props) => {
           },
         }}
         rows={
-          issueMTReducer.allocateLotListSearch.length > 0
-            ? issueMTReducer.allocateLotListSearch
+          requestissueMTReducer.allocateLotListSearch.length > 0
+            ? requestissueMTReducer.allocateLotListSearch
             : rows
         }
         columns={columns}
